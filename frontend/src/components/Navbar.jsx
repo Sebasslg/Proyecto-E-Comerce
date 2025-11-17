@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart, Menu, X } from "lucide-react";
+import { useCart } from "../context/CartContext";
 
-const Navbar = ({ cartItemCount }) => {
+const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { getItemCount } = useCart();
+  const cartItemCount = getItemCount ? getItemCount() : 0;
 
   // 🔹 Cierra el menú móvil al cambiar de ruta
   useEffect(() => setMenuOpen(false), [location]);
@@ -28,9 +31,7 @@ const Navbar = ({ cartItemCount }) => {
   return (
     <nav
       className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-blue-700/90 backdrop-blur-md shadow-lg"
-          : "bg-blue-600 shadow-sm"
+        scrolled ? "navbar-glass shadow-lg" : "bg-blue-600 shadow-sm"
       } text-white`}
     >
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">

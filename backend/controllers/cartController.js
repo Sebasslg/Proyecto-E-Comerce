@@ -45,8 +45,46 @@ const getCart = (req, res) => {
   res.json(Array.from(cart.values()));
 };
 
+// @desc    Actualizar cantidad de un producto en el carrito
+// @route   POST /api/cart/update
+// @access  Public
+const updateCart = async (req, res) => {
+  const { productId, quantity } = req.body;
+  const id = parseInt(productId, 10);
+
+  if (!id || typeof quantity !== 'number') {
+    return res.status(400).json({ message: 'productId y quantity son requeridos' });
+  }
+
+  if (quantity <= 0) {
+    // eliminar
+    if (cart.has(id)) cart.delete(id);
+    return res.status(200).json(Array.from(cart.values()));
+  }
+
+  if (cart.has(id)) {
+    const existing = cart.get(id);
+    existing.quantity = quantity;
+    cart.set(id, existing);
+    return res.status(200).json(Array.from(cart.values()));
+  }
+
+  // Si no está en el carrito, intentamos obtener info del producto (opcional)
+  try {
+    const Product = require('../models/Product');
+    const found = await Product.findByPk(id);
+    if (!found) return res.status(404).json({ message: 'Producto no encontrado' });
+    cart.set(id, { product: found.toJSON(), quantity });
+    return res.status(200).json(Array.from(cart.values()));
+  } catch (err) {
+    console.error('Error al actualizar carrito', err);
+    return res.status(500).json({ message: 'Error del servidor' });
+  }
+};
+
 module.exports = {
   addToCart,
   removeFromCart,
   getCart,
+  updateCart,
 };

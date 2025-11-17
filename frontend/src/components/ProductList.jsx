@@ -18,10 +18,7 @@ const ProductList = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         {productos.map((p) => (
-          <div
-            key={p.id}
-            className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition"
-          >
+          <div key={p.id} className="card hover:shadow-lg transition">
             <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">
               {p.name}
             </h3>
@@ -36,7 +33,7 @@ const ProductList = () => {
                 addToCart(p);
                 console.log("✅ Producto enviado al carrito:", p);
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold w-full py-2 rounded-lg"
+              className="btn-primary w-full"
             >
               Agregar al carrito
             </button>

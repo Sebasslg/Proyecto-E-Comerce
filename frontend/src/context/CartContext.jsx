@@ -1,70 +1,72 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import * as api from '../services/api';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState(() => {
-    // 🔹 Recuperar carrito desde localStorage
-    const saved = localStorage.getItem("cart");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // 🔹 Guardar carrito en localStorage cuando cambie
+  // 🔹 Cargar carrito desde el backend
+  const loadCart = async () => {
+    try {
+      setLoading(true);
+      const res = await api.getCart();
+      setCartItems(res.data || []);
+    } catch (err) {
+      console.error('Error loading cart', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
-  }, [cartItems]);
+    loadCart();
+  }, []);
 
-  // ➕ Agregar producto al carrito
-  const addToCart = (product) => {
-    setCartItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
+  // ➕ Agregar producto
+  const addToCart = async (product) => {
+    try {
+      const res = await api.addToCart(product);
+      setCartItems(res.data || []);
+    } catch (err) {
+      console.error('Error adding to cart', err);
+    }
   };
 
-  // ➖ Eliminar un producto
-  const removeFromCart = (id) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  // ➖ Eliminar producto
+  const removeFromCart = async (productId) => {
+    try {
+      const res = await api.removeFromCart(productId);
+      setCartItems(res.data || []);
+    } catch (err) {
+      console.error('Error removing from cart', err);
+    }
   };
 
-  // 🔄 Cambiar cantidad
-  const updateQuantity = (id, change) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) =>
-          item.id === id
-            ? { ...item, quantity: Math.max(item.quantity + change, 1) }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
+  // 🔄 Actualizar cantidad
+  const updateQuantity = async (productId, quantity) => {
+    try {
+      const res = await api.post('/cart/update', { productId, quantity });
+      setCartItems(res.data || []);
+    } catch (err) {
+      console.error('Error updating quantity', err);
+    }
   };
 
-  // 🗑️ Vaciar carrito
-  const clearCart = () => setCartItems([]);
-
-  // 💰 Calcular total
-  const total = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  // 🔢 Cantidad total de items
+  const getItemCount = () =>
+    cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
 
   return (
     <CartContext.Provider
       value={{
         cartItems,
+        loading,
         addToCart,
         removeFromCart,
         updateQuantity,
-        clearCart,
-        total,
+        getItemCount,
       }}
     >
       {children}
@@ -73,3 +75,11 @@ export const CartProvider = ({ children }) => {
 };
 
 export const useCart = () => useContext(CartContext);
+      const updateQuantity = async (productId, quantity) => {
+        try {
+          const res = await api.updateCart(productId, quantity);
+          setCartItems(res.data || []);
+        } catch (err) {
+          console.error('Error updating quantity', err);
+        }
+      };
