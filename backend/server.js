@@ -4,15 +4,12 @@ require('dotenv').config();
 
 /*
   Archivo: backend/server.js
-  Propósito: Punto de entrada del servidor Express. Aquí se configuran los
-  middlewares globales, se montan las rutas de la API y se sincroniza la DB.
-
-  Qué modificar aquí normalmente:
-  - Cambiar el puerto por defecto: modificar `process.env.PORT` en `backend/.env`.
-  - Añadir middlewares globales (ej. autenticación, rate-limit, logs).
-  - Montar nuevas rutas: `app.use('/api/mi-recurso', miRouter)`.
-  - Si prefieres ejecutar migraciones en vez de `sequelize.sync()`, reemplaza
-    la llamada por tu flujo de migraciones (Sequelize CLI o umzug).
+  Propósito: Punto de entrada del servidor Express.
+  
+  MODIFICACIÓN CLAVE: Se implementó una función de reintento exponencial (retry loop)
+  en el bloque `startServer` para mitigar la inestabilidad de la conexión inicial
+  con MySQL en Azure Container Instances (ACI). El servidor intentará conectar
+  hasta 5 veces antes de fallar.
 */
 
 const sequelize = require('./config/db');
@@ -21,28 +18,44 @@ const cartRoutes = require('./routes/cartRoutes');
 
 const app = express();
 
-// Middlewares globales - aquí puedes insertar auth, logs, etc.
+// Middlewares globales
 app.use(cors());
 app.use(express.json());
 
-// Rutas de la API - modifica o añade nuevas rutas según necesites.
+// Rutas de la API
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
-  try {
-    // Por defecto hacemos sync para desarrollo rápido. En producción
-    // se recomienda usar migraciones en lugar de `sync({ force: true })`.
-    await sequelize.sync();
-    console.log('Base de datos conectada...');
+// ====================================================================
+// FUNCIÓN DE ARRANQUE CON REINTENTO EXPONENCIAL
+// ====================================================================
 
+const MAX_RETRIES = 5;
+
+const startServer = async (attempt = 1) => {
+  try {
+    // 1. Autenticar y Sincronizar la base de datos
+    await sequelize.authenticate();
+    await sequelize.sync();
+    console.log(' Base de datos conectada y modelos sincronizados...');
+
+    // 2. Iniciar el servidor Express
     app.listen(PORT, () => {
-      console.log(`Servidor corriendo en el puerto ${PORT}`);
+      console.log(` Servidor corriendo en el puerto ${PORT}`);
     });
+
   } catch (error) {
-    console.error('No se pudo conectar a la base de datos:', error);
+    if (attempt < MAX_RETRIES) {
+      const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s, 16s, etc.
+      console.warn(` Intento ${attempt}/${MAX_RETRIES}: Falló la conexión a la DB. Reintentando en ${delay / 1000} segundos...`);
+      setTimeout(() => startServer(attempt + 1), delay);
+    } else {
+      console.error(' Error FATAL: No se pudo conectar a la base de datos después de varios intentos.', error);
+      // Forzamos la salida para que Azure reinicie el contenedor, pero con logs claros.
+      process.exit(1); 
+    }
   }
 };
 

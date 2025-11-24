@@ -1,0 +1,21 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# [ADICIÓN CRÍTICA]: Instalar netcat para el script de espera
+RUN apk add --no-cache netcat-openbsd
+
+COPY package*.json ./
+RUN npm install --production
+
+COPY . .
+
+# [ADICIÓN CRÍTICA]: Copiar el script de espera y darle permisos
+COPY wait-for-db.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/wait-for-db.sh
+
+ENV NODE_ENV=production
+EXPOSE 4000
+
+# [MODIFICACIÓN CRÍTICA]: El CMD ahora ejecuta el script de espera
+CMD ["wait-for-db.sh"]

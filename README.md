@@ -1,129 +1,59 @@
-# Tienda — Plantilla e-commerce (Full Stack)
+# 🛒 Tienda Cloud - Arquitectura de Microservicios
 
-Repositorio de ejemplo con un backend en Node/Express + Sequelize (MySQL) y un frontend en React (Vite + Tailwind).
+Este proyecto implementa una solución de comercio electrónico basada en una arquitectura de microservicios contenerizada. El sistema está diseñado para ser modular, escalable y resiliente, desplegado completamente en **Microsoft Azure**.
 
-## Requisitos
+🔗 **URL del Proyecto (Demo en Vivo):** http://salgadotienda.eastus2.azurecontainer.io
+*(Nota: El despliegue puede estar detenido temporalmente para ahorro de créditos Azure)*
 
-- Node.js (v16+ recomendado)
-- npm
-- MySQL local o accesible
+## 🏗️ Arquitectura del Sistema
 
-## Estructura principal
+El sistema se compone de 5 contenedores orquestados que se comunican a través de una red interna tanto en local como en la nube:
 
-- `/backend` — servidor Express, Sequelize, modelos y rutas
-- `/frontend` — aplicación React con Vite y Tailwind
+1.  **Nginx (Reverse Proxy):** Puerta de enlace única. Recibe todo el tráfico HTTP en el puerto 80 y lo distribuye inteligentemente:
+    * `/api/*` ➝ Redirigido al **Backend** (Cluster interno).
+    * `/*` ➝ Redirigido al **Frontend** (Servidor Web).
+2.  **Frontend:** Aplicación SPA (Single Page Application) construida con **React + Vite + TailwindCSS**.
+3.  **Backend:** API RESTful construida con **Node.js y Express**. Maneja la lógica de negocio y conexión a datos.
+4.  **Base de Datos:** **MySQL 8.0** con persistencia de datos garantizada mediante volúmenes (Azure Files en nube / Volumen local en desarrollo).
+5.  **Sistema de Backup:** Contenedor "Sidecar" autónomo que ejecuta `mysqldump` automáticamente cada hora.
 
-## Variables de entorno
+### 📊 Diagrama de Arquitectura
 
-Copia `backend/.env` y actualiza con tus credenciales:
+```mermaid
+graph TD
+    User((Usuario)) -->|HTTP :80| Nginx[Proxy Nginx]
+    Nginx -->|/| Frontend[React App]
+    Nginx -->|/api| Backend[Node.js API]
+    Backend -->|TCP :3306| DB[(MySQL Database)]
+    Backup[Backup Service] -->|Dump cada 1h| DB
+    DB -.->|Persistencia| AzureFiles[Azure Storage Share]
+    Backup -.->|SQL Files| AzureBackup[Azure Backup Share]
 
-```
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=tu_clave
-DB_NAME=mi_tienda
-PORT=5000
-```
 
-## Inicializar base de datos
+Descripción	Comando de Azure CLI
 
-1. Inicia MySQL y crea la base de datos:
+Login e Inicio	az login
+Crear Resource Group	az group create --name miResourceGroup --location eastus2
+Crear Storage Account	az storage account create --resource-group miResourceGroup --name salgadofiles --sku Standard_LRS --location eastus2
+Obtener Clave de Storage (Para montaje de disco)	az storage account keys list --resource-group miResourceGroup --account-name salgadofiles --query "[0].value" --output tsv
+Crear File Share (MySQL)	az storage share create --account-name salgadofiles --name mysqlshare
+Crear File Share (Backup)	az storage share create --account-name salgadofiles --name backupshare
 
-```powershell
-mysql -u root -p -e "CREATE DATABASE mi_tienda;"
-```
 
-2. (Opcional) Si no usas `root`, ajusta `DB_USER`/`DB_PASS` en `backend/.env`.
 
-## Instalar dependencias
+Descripción	Comando de Docker / Azure CLI
+Login en Docker Hub	docker login
+Build + Push de Backend	docker build -t sebasslg/backend:v1 ./backend
+docker push sebasslg/backend:v1
+Build + Push de Frontend	docker build -t sebasslg/frontend:v1 ./frontend
+docker push sebasslg/frontend:v1
+Build + Push de Nginx (Corregido)	docker build -t sebasslg/nginx:v1 ./nginx
+docker push sebasslg/nginx:v1
 
-Abre dos terminales (uno para backend y otro para frontend):
 
-Backend:
-```powershell
-cd c:\Users\sebal\Desktop\Tienda\backend
-npm install
-```
 
-Frontend:
-```powershell
-cd c:\Users\sebal\Desktop\Tienda\frontend
-npm install
-```
-
-> Si PowerShell bloquea ejecución de scripts, ejecuta (temporalmente) antes de `npm install`:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-
-## Ejecutar en desarrollo
-
-1. Inicia el backend (sincroniza modelos y arranca servidor):
-
-```powershell
-cd c:\Users\sebal\Desktop\Tienda\backend
-npm run dev
-```
-
-El backend escucha en `http://localhost:5000`.
-
-2. Inicia el frontend:
-
-```powershell
-cd c:\Users\sebal\Desktop\Tienda\frontend
-npm run dev
-```
-
-Vite levantará el frontend en `http://localhost:5174` (o un puerto cercano). El frontend está configurado con un proxy de desarrollo (`/api` → `http://localhost:5000`) para evitar problemas de CORS y red.
-
-## Probar la aplicación
-
-- Abre el frontend en el navegador (`http://localhost:5174/`).
-- Ve a la pestaña **Productos** y usa **Agregar al carrito**. El carrito se sincroniza con el backend.
-- Abre la pestaña **Carrito** para ver items, cantidades y total.
-
-## Notas y solución de problemas
-
-- Si ves `Access denied` al conectar con MySQL: revisa `backend/.env` y credenciales.
-- Si ves `Unknown database 'mi_tienda'`: crea la DB como se indica arriba.
-- Si el frontend no comunica con el backend cuando usas una IP de red, usa `localhost` en la URL del navegador o asegúrate de que el firewall no bloquee el puerto 5000.
-- El proyecto incluye una configuración de proxy en `frontend/vite.config.js` que redirige `/api` hacia `http://localhost:5000` durante el desarrollo.
-
-## Endpoints principales
-
-- `GET /api/products` — listar productos
-- `GET /api/products/:id` — obtener producto por id
-- `POST /api/products` — crear producto
-- `PUT /api/products/:id` — actualizar producto
-- `DELETE /api/products/:id` — eliminar producto
-
-- `GET /api/cart` — obtener carrito
-- `POST /api/cart/add` — agregar producto al carrito (envía objeto `product` completo)
-- `DELETE /api/cart/remove/:id` — eliminar producto del carrito por id
-
-## Dónde modificar el código (guía rápida)
-
-- Backend:
-	- `backend/server.js`: punto de entrada; añade middlewares, nuevas rutas y cambia el puerto.
-	- `backend/config/db.js`: credenciales y opciones de Sequelize.
-	- `backend/models/Product.js`: campos del modelo `Product` (añadir SKU, categoría, etc.).
-	- `backend/controllers/productController.js`: lógica de CRUD y validaciones.
-	- `backend/controllers/cartController.js`: lógica del carrito (actualmente en memoria). Persistir aquí cambia comportamiento.
-	- `backend/routes/*.js`: definir y proteger endpoints (añadir auth middleware).
-
-- Frontend:
-	- `frontend/src/services/api.js`: baseURL y helpers para llamadas API; agrega headers de auth aquí.
-	- `frontend/src/context/CartContext.jsx`: lógica central del carrito en el cliente; añade persistencia/localStorage o manejo offline aquí.
-	- `frontend/src/components/ProductList.jsx`: listados de producto (reemplazar datos de ejemplo por API).
-	- `frontend/src/components/Cart.jsx`: vista del carrito y controles de cantidad.
-	- `frontend/src/components/Navbar.jsx`: enlaces y visual del navbar.
-	- `frontend/src/index.css`: utilidades y componentes Tailwind personalizados.
-
-Si quieres, puedo añadir ejemplos concretos de cómo persistir el carrito en MySQL o Redis, o preparar migraciones de Sequelize.
-
-## Siguientes pasos (opcional)
-
-- Persistir carrito en DB en lugar de memoria (crear modelo `Cart`/`CartItem`).
-- Añadir autenticación y endpoints por usuario.
-- Preparar scripts de despliegue / Docker.
+Ver Estado de Contenedores	az container list --resource-group miResourceGroup --output table
+Ver Logs del Backend	az container logs --resource-group miResourceGroup --name backend
+Reiniciar un Contenedor	az container restart --resource-group miResourceGroup --name [contenedor]
+URL Final del Proyecto	http://salgadotienda.eastus2.azurecontainer.io
+Apagar Contenedores	for %i in (nginx backend frontend mysql backup) do az container stop --resource-group miResourceGroup --name %i
