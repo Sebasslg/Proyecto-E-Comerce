@@ -57,3 +57,6 @@ Ver Logs del Backend	az container logs --resource-group miResourceGroup --name b
 Reiniciar un Contenedor	az container restart --resource-group miResourceGroup --name [contenedor]
 URL Final del Proyecto	http://salgadotienda.eastus2.azurecontainer.io
 Apagar Contenedores	for %i in (nginx backend frontend mysql backup) do az container stop --resource-group miResourceGroup --name %i
+
+
+url de la pag en azure http://salgadotienda.eastus2.azurecontainer.io/
