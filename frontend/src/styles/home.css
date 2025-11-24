@@ -1,0 +1,33 @@
+/* frontend/src/styles/home.css
+   Estilos específicos para la vista Home.
+   Contiene variables y utilidades que afectan sólo la página principal.
+*/
+
+.home-hero {
+  padding-top: 4.5rem; /* se alinea con navbar fijo */
+  padding-bottom: 3rem;
+  background: linear-gradient(to bottom, var(--bg-50), var(--surface));
+}
+
+.home-hero .title {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.home-hero .subtitle {
+  color: var(--muted);
+}
+
+.home-products .card img {
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+}
+
+/* CTA helpers */
+.home-cta {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Nota: modifica colores usando variables en palette.css */

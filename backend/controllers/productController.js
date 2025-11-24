@@ -1,10 +1,22 @@
 const Product = require('../models/Product');
 
+/*
+  Archivo: backend/controllers/productController.js
+  Propósito: Implementa la lógica de negocio para los endpoints de productos.
+
+  Qué modificar aquí:
+  - Validaciones y sanitización de `req.body` antes de crear/actualizar.
+  - Reglas de negocio (por ejemplo: decrementar stock al crear un pedido).
+  - Manejo de errores más detallado (códigos de error y logs).
+  - Añadir paginación/filtros en `getProducts` si la tabla crece.
+*/
+
 // @desc    Obtener todos los productos
 // @route   GET /api/products
 // @access  Public
 const getProducts = async (req, res) => {
   try {
+    // Ejemplo: Podrías añadir `limit` y `offset` usando `req.query`.
     const products = await Product.findAll();
     res.json(products);
   } catch (error) {
@@ -34,6 +46,7 @@ const getProductById = async (req, res) => {
 const createProduct = async (req, res) => {
   const { name, description, price, stock, image } = req.body;
   try {
+    // Recomendación: validar los campos aquí (ej. usar Joi zod o express-validator)
     const product = await Product.create({
       name,
       description,

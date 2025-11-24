@@ -1,0 +1,58 @@
+/* frontend/src/styles/navbar.css
+   Propósito: Estilos y variables específicas para la Navbar.
+   Cambia las variables `--nav-*` para ajustar colores sin tocar el HTML.
+*/
+
+/* Variables locales que usan las variables globales de palette.css */
+.navbar {
+  background: var(--nav-bg);
+  color: var(--nav-text);
+}
+
+.navbar .brand {
+  color: var(--nav-text);
+  font-weight: 800;
+}
+
+.navbar .link {
+  color: rgba(255,255,255,0.95);
+  transition: color .15s ease;
+}
+
+.navbar .link:hover {
+  color: #ffffff;
+}
+
+/* Burbujas de cuenta del carrito */
+.navbar .cart-badge {
+  background: #fff;
+  color: var(--nav-bg);
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* Para temas claros/oscuro, aunque la navbar suele ser opaca */
+.navbar--glass {
+  background: rgba(18, 73, 95, 0.85);
+  backdrop-filter: blur(6px);
+}
+
+/* Sombra personalizada para la navbar cuando se agrega la clase shadow-*
+   Usamos la variable --nav-shadow definida en palette.css para controlar
+   color y opacidad desde la paleta global. Se usa !important para asegurar
+   que anule las utilidades `shadow-*` de Tailwind si están después en el CSS. */
+.navbar.shadow-sm {
+  box-shadow: 0 1px 3px var(--nav-shadow) !important;
+}
+
+.navbar.shadow-lg {
+  box-shadow: 0 8px 24px var(--nav-shadow) !important;
+}
+
+.navbar--glass.shadow-lg {
+  box-shadow: 0 8px 24px var(--nav-shadow) !important;
+}
+
+/* Comentario: importa este archivo en index.css para que la Navbar use estas clases */

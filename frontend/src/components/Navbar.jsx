@@ -3,6 +3,17 @@ import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart, Menu, X } from "lucide-react";
 import { useCart } from "../context/CartContext";
 
+/*
+  Archivo: frontend/src/components/Navbar.jsx
+  Propósito: Barra de navegación responsive.
+
+  Personalización rápida:
+  - Para cambiar links edita el array `navLinks` en este archivo.
+  - Para ajustar estilos globales (colores, sombras) edita `src/index.css`.
+  - Si quieres mostrar el total del carrito en vez del conteo, usa `useCart()`
+    y calcula el total con `cartItems.reduce(...)`.
+*/
+
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -29,17 +40,10 @@ const Navbar = () => {
   ];
 
   return (
-    <nav
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled ? "navbar-glass shadow-lg" : "bg-blue-600 shadow-sm"
-      } text-white`}
-    >
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+    <nav className={`fixed w-full z-50 transition-all duration-300 navbar ${scrolled ? 'navbar--glass shadow-lg' : 'shadow-sm'} text-white`}>
+      <div className="container-max px-4 py-3 flex justify-between items-center">
         {/* 🔹 Logo */}
-        <Link
-          to="/"
-          className="text-2xl font-extrabold tracking-wide hover:text-gray-200 transition-colors duration-200"
-        >
+        <Link to="/" className="brand text-2xl font-extrabold tracking-wide transition-colors duration-200">
           MiTienda
         </Link>
 
@@ -57,10 +61,7 @@ const Navbar = () => {
             <Link
               key={path}
               to={path}
-              className={`relative hover:text-gray-200 transition-colors duration-300 
-              after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] 
-              after:bg-white hover:after:w-full after:transition-all 
-              ${location.pathname === path ? "after:w-full" : ""}`}
+              className={`link relative transition-colors duration-300 after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-white after:transition-all ${location.pathname === path ? "after:w-full" : ""}`}
             >
               {label}
             </Link>
@@ -69,11 +70,11 @@ const Navbar = () => {
           {/* 🔹 Carrito */}
           <Link
             to="/cart"
-            className="relative flex items-center hover:text-gray-200 transition"
+            className="link relative flex items-center transition"
           >
             <ShoppingCart size={24} />
             {cartItemCount > 0 && (
-              <span className="absolute -top-2 -right-3 bg-white text-blue-600 rounded-full px-2 text-xs font-bold shadow-sm">
+              <span className="absolute -top-2 -right-3 cart-badge">
                 {cartItemCount}
               </span>
             )}
@@ -82,17 +83,13 @@ const Navbar = () => {
       </div>
 
       {/* 🔹 Menú móvil */}
-      <div
-        className={`md:hidden bg-blue-700/95 backdrop-blur-md transition-all duration-300 overflow-hidden ${
-          menuOpen ? "max-h-60" : "max-h-0"
-        }`}
-      >
+      <div className={`md:hidden navbar transition-all duration-300 overflow-hidden ${menuOpen ? 'max-h-60' : 'max-h-0'}`}>
         <div className="flex flex-col items-center gap-3 py-3 text-base font-medium">
           {navLinks.map(({ path, label }) => (
             <Link
               key={path}
               to={path}
-              className="hover:text-gray-200 transition"
+              className="link transition"
               onClick={() => setMenuOpen(false)}
             >
               {label}
@@ -101,7 +98,7 @@ const Navbar = () => {
 
           <Link
             to="/cart"
-            className="hover:text-gray-200 transition"
+            className="link transition"
             onClick={() => setMenuOpen(false)}
           >
             🛒 Carrito {cartItemCount > 0 && `(${cartItemCount})`}

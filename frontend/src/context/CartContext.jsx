@@ -1,6 +1,20 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as api from '../services/api';
 
+/*
+  Archivo: frontend/src/context/CartContext.jsx
+  Propósito: Proveer estado y operaciones del carrito a la aplicación.
+
+  Qué modificar aquí:
+  - Persistencia: actualmente el carrito se carga desde el backend en `loadCart()`.
+    Si quieres mantener una copia en localStorage para soporte offline, añade
+    sincronización aquí (guardar en localStorage tras cada cambio y reintentar envío).
+  - Autenticación: para carritos por usuario agrega el token en `api` (headers)
+    y envía el userId al backend.
+  - Optimización: puedes actualizar estado local inmediatamente y reconciliar
+    con el servidor en segundo plano para una UX más rápida.
+*/
+
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
@@ -44,10 +58,10 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // 🔄 Actualizar cantidad
+  // 🔄 Actualizar cantidad usando el helper `api.updateCart`
   const updateQuantity = async (productId, quantity) => {
     try {
-      const res = await api.post('/cart/update', { productId, quantity });
+      const res = await api.updateCart(productId, quantity);
       setCartItems(res.data || []);
     } catch (err) {
       console.error('Error updating quantity', err);
@@ -55,19 +69,11 @@ export const CartProvider = ({ children }) => {
   };
 
   // 🔢 Cantidad total de items
-  const getItemCount = () =>
-    cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
+  const getItemCount = () => cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
 
   return (
     <CartContext.Provider
-      value={{
-        cartItems,
-        loading,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        getItemCount,
-      }}
+      value={{ cartItems, loading, addToCart, removeFromCart, updateQuantity, getItemCount }}
     >
       {children}
     </CartContext.Provider>
@@ -75,11 +81,3 @@ export const CartProvider = ({ children }) => {
 };
 
 export const useCart = () => useContext(CartContext);
-      const updateQuantity = async (productId, quantity) => {
-        try {
-          const res = await api.updateCart(productId, quantity);
-          setCartItems(res.data || []);
-        } catch (err) {
-          console.error('Error updating quantity', err);
-        }
-      };

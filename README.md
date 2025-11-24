@@ -102,6 +102,26 @@ Vite levantará el frontend en `http://localhost:5174` (o un puerto cercano). El
 - `POST /api/cart/add` — agregar producto al carrito (envía objeto `product` completo)
 - `DELETE /api/cart/remove/:id` — eliminar producto del carrito por id
 
+## Dónde modificar el código (guía rápida)
+
+- Backend:
+	- `backend/server.js`: punto de entrada; añade middlewares, nuevas rutas y cambia el puerto.
+	- `backend/config/db.js`: credenciales y opciones de Sequelize.
+	- `backend/models/Product.js`: campos del modelo `Product` (añadir SKU, categoría, etc.).
+	- `backend/controllers/productController.js`: lógica de CRUD y validaciones.
+	- `backend/controllers/cartController.js`: lógica del carrito (actualmente en memoria). Persistir aquí cambia comportamiento.
+	- `backend/routes/*.js`: definir y proteger endpoints (añadir auth middleware).
+
+- Frontend:
+	- `frontend/src/services/api.js`: baseURL y helpers para llamadas API; agrega headers de auth aquí.
+	- `frontend/src/context/CartContext.jsx`: lógica central del carrito en el cliente; añade persistencia/localStorage o manejo offline aquí.
+	- `frontend/src/components/ProductList.jsx`: listados de producto (reemplazar datos de ejemplo por API).
+	- `frontend/src/components/Cart.jsx`: vista del carrito y controles de cantidad.
+	- `frontend/src/components/Navbar.jsx`: enlaces y visual del navbar.
+	- `frontend/src/index.css`: utilidades y componentes Tailwind personalizados.
+
+Si quieres, puedo añadir ejemplos concretos de cómo persistir el carrito en MySQL o Redis, o preparar migraciones de Sequelize.
+
 ## Siguientes pasos (opcional)
 
 - Persistir carrito en DB en lugar de memoria (crear modelo `Cart`/`CartItem`).

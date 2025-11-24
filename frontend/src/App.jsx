@@ -8,6 +8,17 @@ import Contact from "./components/Contact";
 import Cart from "./components/Cart";
 import { CartProvider } from "./context/CartContext";
 
+/*
+  Archivo: frontend/src/App.jsx
+  Propósito: Punto de montaje de la app React. Aquí se incluyen:
+  - Rutas principales (añade nuevas rutas en el componente `Routes`).
+
+  Para extender:
+  - Añadir protected routes: crea un componente `PrivateRoute` y úsalo
+    envolviendo las rutas que requieran autenticación.
+  - Extra providers: envuelve `<Router>` con otros providers si los necesitas.
+*/
+
 function App() {
   return (
     <CartProvider>

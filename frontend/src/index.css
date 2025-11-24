@@ -1,3 +1,16 @@
+/* Importar paleta y estilos por vista.
+	- `palette.css` define variables CSS globales.
+	- Los archivos por vista contienen reglas específicas y helpers.
+	Edita estos archivos en `frontend/src/styles/` para personalizar colores.
+*/
+@import "./styles/palette.css";
+@import "./styles/navbar.css";
+@import "./styles/home.css";
+@import "./styles/about.css";
+@import "./styles/contact.css";
+@import "./styles/cart.css";
+@import "./styles/products.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,11 +21,15 @@
 
 @layer components {
 	.btn-primary {
-		@apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow;
+		@apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-lg shadow-md transition-colors duration-200;
+	}
+
+	.btn-secondary {
+		@apply bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 font-semibold py-3 px-5 rounded-lg shadow-sm transition-colors duration-200;
 	}
 
 	.card {
-		@apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-md;
+		@apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow duration-200;
 	}
 
 	.navbar-glass {
@@ -24,13 +41,15 @@
 	}
 
 	.price {
-		@apply text-lg font-semibold text-gray-800 dark:text-white;
+		@apply text-lg font-extrabold text-gray-800 dark:text-white;
 	}
 }
 
 /* Global variables / small custom utilities */
 :root {
-	--brand: #1e40af;
+	--brand: #40be8e;
+	--muted: #6b7280;
+	--card-radius: 1rem;
 }
 
 @layer utilities {
@@ -44,5 +63,52 @@
 	max-width: 1200px;
 	margin-left: auto;
 	margin-right: auto;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+/* Base global */
+@layer base {
+	html, body, #root {
+		height: 100%;
+	}
+
+	body {
+		@apply bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100 antialiased;
+		font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	h1, h2, h3 {
+		@apply text-gray-900 dark:text-white;
+	}
+
+	a {
+		@apply text-blue-600 dark:text-blue-400;
+	}
+}
+
+/* Ensure accessible focus outlines */
+@layer utilities {
+	.focus-ring:focus {
+		@apply outline-none ring-2 ring-offset-2 ring-blue-400;
+	}
+
+	/* Hero helpers */
+	.hero {
+		@apply bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800;
+	}
+
+	/* Small utility for subtle card border */
+	.card-border-soft {
+		border-color: rgba(0,0,0,0.04);
+	}
+}
+
+/* Large hero title scale (helper class for Home) */
+.hero-title {
+	font-size: clamp(2rem, 4.5vw, 3.5rem);
+	line-height: 1.05;
 }
 

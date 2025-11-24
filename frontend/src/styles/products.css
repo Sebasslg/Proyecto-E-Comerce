@@ -1,0 +1,18 @@
+/* frontend/src/styles/products.css
+   Estilos para listados/product cards
+*/
+
+.products-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.product-card {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.product-card .price {
+  color: var(--text);
+  font-weight: 700;
+}

@@ -1,0 +1,29 @@
+/* frontend/src/styles/contact.css
+   Estilos para el formulario de contacto
+*/
+
+.contact-card {
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+.contact-card label {
+  color: var(--text);
+}
+
+.contact-card .help {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* Estilos de inputs específicamente para el formulario */
+.contact-card input,
+.contact-card textarea {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(15,23,42,0.06);
+}
+
+/* Botón primario del formulario */
+.contact-card .submit-btn {
+  display: inline-block;
+}

@@ -1,4 +1,15 @@
-// Simulación de un carrito en memoria (mejorado para manejar cantidades)
+/*
+  Archivo: backend/controllers/cartController.js
+  Propósito: Lógica simple de carrito almacenado en memoria.
+
+  Nota importante:
+  - Actualmente el carrito está almacenado en memoria (Map). Esto es útil
+    para pruebas y desarrollo rápido, pero NO persiste entre reinicios del
+    servidor. Para producción debes persistirlo en una base de datos (ej.
+    Redis para sesiones/estado temporal o una tabla `carts` en MySQL).
+  - Aquí puedes añadir autenticación para asociar carritos a usuarios.
+*/
+
 const cart = new Map(); // Usamos un Map para [productId, { product, quantity }]
 
 // @desc    Agregar un producto al carrito
@@ -19,6 +30,7 @@ const addToCart = (req, res) => {
     cart.set(product.id, { product, quantity: 1 });
   }
   
+  // Responder con el contenido completo del carrito (array)
   res.status(200).json(Array.from(cart.values()));
 };
 
